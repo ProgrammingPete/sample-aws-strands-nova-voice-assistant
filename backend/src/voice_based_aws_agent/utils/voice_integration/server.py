@@ -4,7 +4,8 @@ Simple WebSocket server
 """
 
 import asyncio
-import websockets
+from websockets.server import serve
+from websockets import exceptions
 import json
 import logging
 import warnings
@@ -82,7 +83,7 @@ async def websocket_handler(websocket, path, config):
             except Exception as e:
                 logger.error(f"Error processing WebSocket message: {e}")
                     
-    except websockets.exceptions.ConnectionClosed:
+    except exceptions.ConnectionClosed:
         logger.info("WebSocket connection closed")
     except Exception as e:
         logger.error(f"WebSocket handler error: {e}")
@@ -106,7 +107,7 @@ async def forward_responses(websocket, stream_manager):
             try:
                 event = json.dumps(response)
                 await websocket.send(event)
-            except websockets.exceptions.ConnectionClosed:
+            except exceptions.ConnectionClosed:
                 logger.info("WebSocket connection closed during response forwarding")
                 break
             except Exception as send_error:
@@ -124,7 +125,7 @@ async def main(host, port, config):
     """Main function to run the WebSocket server"""
     try:
         # Start WebSocket server
-        async with websockets.serve(
+        async with serve(
             lambda ws, path: websocket_handler(ws, path, config),
             host,
             port
@@ -138,6 +139,12 @@ async def main(host, port, config):
 
 async def run_server(profile_name=None, region=None, host="localhost", port=80):
     """Run the simple WebSocket server"""
+    
+    #ensure profile_name is set
+    if not profile_name:
+        logger.warning("profile_name is not defined. Using get_aws_session().profile_name")
+        profile_name = get_aws_session().profile_name
+    
     # Create agent configuration
     config = AgentConfig(
         profile_name=profile_name,

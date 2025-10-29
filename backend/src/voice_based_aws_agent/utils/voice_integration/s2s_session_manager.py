@@ -73,6 +73,10 @@ class S2sSessionManager:
             raise
 
         try:
+            # Ensure client is initialized
+            if not self.bedrock_client:
+                raise RuntimeError("Bedrock client not initialized")
+                
             # Initialize the stream
             self.stream = await self.bedrock_client.invoke_model_with_bidirectional_stream(
                 InvokeModelWithBidirectionalStreamOperationInput(model_id=self.model_id)
@@ -154,58 +158,69 @@ class S2sSessionManager:
     async def _process_responses(self):
         """Process incoming responses from Bedrock."""
         while self.is_active:
-            try:            
+            response_data = None
+            try:
+                
+                #ensure self.stream is initialized
+                if not self.stream:
+                    raise RuntimeError("Stream not initialized")
+                
                 output = await self.stream.await_output()
                 result = await output[1].receive()
                 
-                if result.value and result.value.bytes_:
-                    response_data = result.value.bytes_.decode('utf-8')
+                # Safely access result attributes
+                value = getattr(result, 'value', None)
+                if value and getattr(value, 'bytes_', None):
+                    response_data = value.bytes_.decode('utf-8')
+                else:
+                    continue
                     
-                    json_data = json.loads(response_data)
-                    json_data["timestamp"] = int(time.time() * 1000)  # Milliseconds since epoch
+                json_data = json.loads(response_data)
+                json_data["timestamp"] = int(time.time() * 1000)  # Milliseconds since epoch
+                
+                event_name = None
+                if 'event' in json_data:
+                    event_name = list(json_data["event"].keys())[0]
                     
-                    event_name = None
-                    if 'event' in json_data:
-                        event_name = list(json_data["event"].keys())[0]
-                        
-                        # Handle tool use detection
-                        if event_name == 'toolUse':
-                            self.toolUseContent = json_data['event']['toolUse']
-                            self.toolName = json_data['event']['toolUse']['toolName']
-                            self.toolUseId = json_data['event']['toolUse']['toolUseId']
-                            debug_print(f"Tool use detected: {self.toolName}, ID: {self.toolUseId}")
+                    # Handle tool use detection
+                    if event_name == 'toolUse':
+                        self.toolUseContent = json_data['event']['toolUse']
+                        self.toolName = json_data['event']['toolUse']['toolName']
+                        self.toolUseId = json_data['event']['toolUse']['toolUseId']
+                        debug_print(f"Tool use detected: {self.toolName}, ID: {self.toolUseId}")
 
-                        # Process tool use when content ends
-                        elif event_name == 'contentEnd' and json_data['event'][event_name].get('type') == 'TOOL':
-                            prompt_name = json_data['event']['contentEnd'].get("promptName")
-                            debug_print("Processing tool use and sending result")
-                            toolResult = await self.processToolUse(self.toolName, self.toolUseContent)
-                                
-                            # Send tool start event
-                            toolContent = str(uuid.uuid4())
-                            tool_start_event = S2sEvent.content_start_tool(prompt_name, toolContent, self.toolUseId)
-                            await self.send_raw_event(tool_start_event)
+                    # Process tool use when content ends
+                    elif event_name == 'contentEnd' and json_data['event'][event_name].get('type') == 'TOOL':
+                        prompt_name = json_data['event']['contentEnd'].get("promptName")
+                        debug_print("Processing tool use and sending result")
+                        toolResult = await self.processToolUse(self.toolName, self.toolUseContent)
                             
-                            # Send tool result event
-                            if isinstance(toolResult, dict):
-                                content_json_string = json.dumps(toolResult)
-                            else:
-                                content_json_string = toolResult
+                        # Send tool start event
+                        toolContent = str(uuid.uuid4())
+                        tool_start_event = S2sEvent.content_start_tool(prompt_name, toolContent, self.toolUseId)
+                        await self.send_raw_event(tool_start_event)
+                        
+                        # Send tool result event
+                        if isinstance(toolResult, dict):
+                            content_json_string = json.dumps(toolResult)
+                        else:
+                            content_json_string = toolResult
 
-                            tool_result_event = S2sEvent.text_input_tool(prompt_name, toolContent, content_json_string)
-                            print("Tool result", tool_result_event)
-                            await self.send_raw_event(tool_result_event)
+                        tool_result_event = S2sEvent.text_input_tool(prompt_name, toolContent, content_json_string)
+                        print("Tool result", tool_result_event)
+                        await self.send_raw_event(tool_result_event)
 
-                            # Send tool content end event
-                            tool_content_end_event = S2sEvent.content_end(prompt_name, toolContent)
-                            await self.send_raw_event(tool_content_end_event)
-                    
-                    # Put the response in the output queue for forwarding to the frontend
-                    await self.output_queue.put(json_data)
+                        # Send tool content end event
+                        tool_content_end_event = S2sEvent.content_end(prompt_name, toolContent)
+                        await self.send_raw_event(tool_content_end_event)
+                
+                # Put the response in the output queue for forwarding to the frontend
+                await self.output_queue.put(json_data)
 
             except json.JSONDecodeError as ex:
                 print(ex)
-                await self.output_queue.put({"raw_data": response_data})
+                if response_data:
+                    await self.output_queue.put({"raw_data": response_data})
             except StopAsyncIteration as ex:
                 # Stream has ended
                 print(ex)

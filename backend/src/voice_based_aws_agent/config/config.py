@@ -12,7 +12,7 @@ class AgentConfig:
 
     model_id: str = "anthropic.claude-3-haiku-20240307-v1:0"
     region: str = "us-east-1"
-    profile_name: str = None
+    profile_name: str | None = None
     temperature: float = 0.0
     max_tokens: int = 2048  # Recommended max tokens for better responses
     request_timeout: int = 300  # Timeout in seconds for API requests
@@ -34,7 +34,7 @@ class VoiceConfig:
     timeout_seconds: int = 5  # Silence timeout
 
 
-def create_bedrock_model(config: AgentConfig = None) -> BedrockModel:
+def create_bedrock_model(config: AgentConfig | None = None) -> BedrockModel:
     """
     Create a properly configured BedrockModel for Strands agents.
 
@@ -45,7 +45,7 @@ def create_bedrock_model(config: AgentConfig = None) -> BedrockModel:
         BedrockModel configured with the specified profile and region
     """
     if config is None:
-        config = AgentConfig()
+        raise RuntimeError("No config provided")
 
     # Create a custom boto3 session with the specified profile
     session = boto3.Session(region_name=config.region, profile_name=config.profile_name)

@@ -20,6 +20,10 @@ class EC2Agent(Agent):
     """
 
     def __init__(self, config=None):
+        
+        if config is None:
+            raise RuntimeError("No config provided")
+        
         # Create properly configured Bedrock model
         bedrock_model = create_bedrock_model(config)
 

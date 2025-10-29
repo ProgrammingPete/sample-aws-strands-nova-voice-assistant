@@ -20,6 +20,11 @@ class BackupAgent(Agent):
     """
 
     def __init__(self, config=None):
+        
+        #ensure config is not None
+        if config is None:
+            raise Exception
+        
         # Create properly configured Bedrock model with specified profile
         bedrock_model = create_bedrock_model(config)
 

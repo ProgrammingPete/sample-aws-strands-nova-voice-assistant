@@ -20,6 +20,11 @@ class SSMAgent(Agent):
     """
 
     def __init__(self, config=None):
+        
+        #throw error if config is None
+        if config is None:
+            raise RuntimeError("Configuration must be provided for SSMAgent.")
+        
         # Create properly configured Bedrock model with specified profile
         bedrock_model = create_bedrock_model(config)
 

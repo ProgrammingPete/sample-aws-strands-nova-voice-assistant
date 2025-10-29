@@ -98,7 +98,7 @@ class SupervisorAgentIntegration:
                     )
 
                     # Ensure response is a string and limit length for voice
-                    if hasattr(response, "content"):
+                    if hasattr(response, "content") and not isinstance(response, str):
                         response_text = response.content
                     elif isinstance(response, dict):
                         response_text = response.get("content", str(response))

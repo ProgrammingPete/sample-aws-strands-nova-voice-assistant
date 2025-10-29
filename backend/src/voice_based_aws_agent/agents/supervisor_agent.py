@@ -26,6 +26,10 @@ class SupervisorAgent(Agent):
             specialized_agents: Dictionary mapping agent names to agent instances
             config: AgentConfig instance for AWS profile and region settings
         """
+        
+        if config is None:
+            raise RuntimeError("No config provided")
+        
         # Create properly configured Bedrock model with specified profile
         bedrock_model = create_bedrock_model(config)
 
