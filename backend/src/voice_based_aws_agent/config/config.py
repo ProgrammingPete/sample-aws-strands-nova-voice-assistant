@@ -10,7 +10,7 @@ from strands.models import BedrockModel
 class AgentConfig:
     """Configuration for the agent."""
 
-    model_id: str = "anthropic.claude-3-haiku-20240307-v1:0"
+    model_id: str = "amazon.nova-lite-v1:0"
     region: str = "us-east-1"
     profile_name: str | None = None
     temperature: float = 0.0

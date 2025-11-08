@@ -122,18 +122,7 @@ class SupervisorAgentIntegration:
                 logger.warning(
                     "Using placeholder response - orchestrator not available"
                 )
-                if "ec2" in actual_query.lower() or "instance" in actual_query.lower():
-                    response = "I can help you with EC2 instances, but the AWS Strands orchestrator is not fully initialized. Please check the backend logs for configuration issues."
-                elif (
-                    "ssm" in actual_query.lower()
-                    or "systems manager" in actual_query.lower()
-                ):
-                    response = "I can help you with AWS Systems Manager, but the AWS Strands orchestrator is not fully initialized. Please check the backend logs for configuration issues."
-                elif "backup" in actual_query.lower():
-                    response = "I can help you with AWS Backup, but the AWS Strands orchestrator is not fully initialized. Please check the backend logs for configuration issues."
-                else:
-                    response = f"I received your query: '{actual_query}'. However, the AWS Strands orchestrator is not fully initialized. Please check the backend logs for configuration issues."
-
+                response = f"I received your query: '{actual_query}'. However, the AWS Strands orchestrator is not fully initialized. Please check the backend logs for configuration issues."
                 return response
 
         except Exception as e:

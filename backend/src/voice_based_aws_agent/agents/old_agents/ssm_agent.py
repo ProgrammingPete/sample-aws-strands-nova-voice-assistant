@@ -5,9 +5,9 @@ Handles all Systems Manager related queries with full reasoning and AWS API acce
 
 from strands import Agent
 from strands_tools import use_aws
-from ..config.conversation_config import ConversationConfig, log_conversation_config
-from ..config.config import create_bedrock_model
-from ..utils.prompt_consent import get_consent_instructions
+from ...config.conversation_config import ConversationConfig, log_conversation_config
+from ...config.config import create_bedrock_model
+from ...utils.prompt_consent import get_consent_instructions
 import logging
 
 logger = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ class SSMAgent(Agent):
 
         # Log configuration
         logger.info(
-            "SSMAgent initialized with BedrockModel and consent-aware prompts (configured profile, us-east-1, Claude 3 Haiku)"
+            "SSMAgent initialized with BedrockModel and consent-aware prompts (configured profile, us-east-1, Nova Lite)"
         )
         log_conversation_config("SSMAgent", conversation_manager)
         logger.info("SSMAgent initialized with model and conversation management")

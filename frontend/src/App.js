@@ -65,7 +65,7 @@ function App() {
         navigation={
           <SideNavigation 
             items={ITEMS} 
-            header={["AWS Voice Assistant"]} 
+            header={["Voice Assistant"]} 
             activeHref={activeNavHref} 
             onFollow={handleNavItemClick} 
           />

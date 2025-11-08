@@ -41,7 +41,7 @@ class EC2Agent(Agent):
 
         # Log configuration
         logger.info(
-            "EC2Agent initialized with BedrockModel and consent-aware prompts (configured profile, us-east-1, Claude 3 Haiku)"
+            "EC2Agent initialized with BedrockModel and consent-aware prompts (configured profile, us-east-1, Nova Lite)"
         )
         log_conversation_config("EC2Agent", conversation_manager)
 
