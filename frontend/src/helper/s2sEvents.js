@@ -5,7 +5,7 @@ class S2sEvent {
     temperature: 0.7
   };
 
-  static DEFAULT_SYSTEM_PROMPT = "You are a specialized voice assistant. You can assist with infomormation EC2 instances and AWS related queries, as well as database inforamtion.";
+  static DEFAULT_SYSTEM_PROMPT = "You are a specialized voice assistant. You can assist with infomormation EC2 instances and AWS related queries, as well as database information.";
 
   static DEFAULT_AUDIO_INPUT_CONFIG = {
     mediaType: "audio/lpcm",
