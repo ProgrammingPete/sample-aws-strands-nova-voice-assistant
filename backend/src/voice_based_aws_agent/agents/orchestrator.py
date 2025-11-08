@@ -7,8 +7,9 @@ import logging
 from typing import Dict, Any
 from .supervisor_agent import SupervisorAgent
 from .ec2_agent import EC2Agent
-from .ssm_agent import SSMAgent
-from .backup_agent import BackupAgent
+# from .old_agents.ssm_agent import SSMAgent
+# from .old_agents.backup_agent import BackupAgent
+from .aws_researcher_agent import AWSResearcherAgent
 from ..config.tool_config import setup_tool_environment, get_tool_config
 from ..config.conversation_config import ConversationConfig
 
@@ -46,8 +47,9 @@ class AgentOrchestrator:
             logger.info("Creating specialized agents with conversation management...")
             self.specialized_agents = {
                 "EC2Agent": EC2Agent(self.config),
-                "SSMAgent": SSMAgent(self.config),
-                "BackupAgent": BackupAgent(self.config),
+                # "SSMAgent": SSMAgent(self.config),
+                # "BackupAgent": BackupAgent(self.config),
+                "AWSResearcherAgent": AWSResearcherAgent(self.config)
             }
 
             # Create supervisor with references to specialized agents

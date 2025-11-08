@@ -324,7 +324,7 @@ class VoiceAgent extends React.Component {
                         {
                             "toolSpec": {
                                 "name": "supervisorAgent",
-                                "description": "Routes queries to specialized agents for EC2, Backup, and SSM",
+                                "description": "Routes queries to specialized agents for EC2 and AWS documentation",
                                 "inputSchema": {
                                     "json": JSON.stringify({
                                         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -332,7 +332,7 @@ class VoiceAgent extends React.Component {
                                         "properties": {
                                             "query": {
                                                 "type": "string",
-                                                "description": "The user query about AWS services or operations"
+                                                "description": "The user query"
                                             }
                                         },
                                         "required": ["query"]

@@ -5,9 +5,9 @@ Handles all AWS Backup related queries with full reasoning and AWS API access.
 
 from strands import Agent
 from strands_tools import use_aws
-from ..config.conversation_config import ConversationConfig, log_conversation_config
-from ..config.config import create_bedrock_model
-from ..utils.prompt_consent import get_consent_instructions
+from ...config.conversation_config import ConversationConfig, log_conversation_config
+from ...config.config import create_bedrock_model
+from ...utils.prompt_consent import get_consent_instructions
 import logging
 
 logger = logging.getLogger(__name__)
@@ -20,6 +20,11 @@ class BackupAgent(Agent):
     """
 
     def __init__(self, config=None):
+        
+        #ensure config is not None
+        if config is None:
+            raise Exception
+        
         # Create properly configured Bedrock model with specified profile
         bedrock_model = create_bedrock_model(config)
 
@@ -37,7 +42,7 @@ class BackupAgent(Agent):
 
         # Log configuration
         logger.info(
-            "BackupAgent initialized with BedrockModel and consent-aware prompts (configured profile, us-east-1, Claude 3 Haiku)"
+            "BackupAgent initialized with BedrockModel and consent-aware prompts (configured profile, us-east-1, Nova Lite)"
         )
         log_conversation_config("BackupAgent", conversation_manager)
         logger.info("BackupAgent initialized with model and conversation management")

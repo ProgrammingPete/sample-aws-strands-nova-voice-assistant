@@ -5,7 +5,7 @@ class S2sEvent {
     temperature: 0.7
   };
 
-  static DEFAULT_SYSTEM_PROMPT = "You are a specialized AWS voice assistant. You ONLY help with AWS services and operations. You can assist with EC2 instances, AWS Backup, and SSM operations. If users ask about non-AWS topics, politely redirect them to AWS-related questions. Keep responses concise and focused on AWS services only.";
+  static DEFAULT_SYSTEM_PROMPT = "You are a specialized voice assistant. You can assist with infomormation EC2 instances and AWS related queries, as well as database inforamtion.";
 
   static DEFAULT_AUDIO_INPUT_CONFIG = {
     mediaType: "audio/lpcm",

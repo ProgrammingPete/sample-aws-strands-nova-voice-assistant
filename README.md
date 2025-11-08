@@ -41,7 +41,7 @@ The system implements a simplified multi-agent architecture:
 
 - **Backend**: Python 3.12+ with AWS Strands framework
 - **Frontend**: React with AWS Cloudscape Design components
-- **AI Models**: AWS Bedrock Claude 3 Haiku for all agents
+- **AI Models**: AWS Bedrock Nova Lite for all agents
 - **Voice Processing**: Amazon Nova Sonic for audio I/O
 - **Package Management**: Standard pip with requirements.txt
 
@@ -91,7 +91,7 @@ Running this voice-driven AWS assistant involves several AWS services with usage
 - **Text input tokens**: $0.00006 per 1K tokens
 - **Text output tokens**: $0.00024 per 1K tokens
 
-### AWS Bedrock Claude 3 Haiku
+### AWS Bedrock Nova Lite
 - **Input tokens**: $0.00025 per 1K tokens
 - **Output tokens**: $0.00025 per 1K tokens
 
@@ -164,7 +164,7 @@ For production deployments, additional costs may include:
 - **Python 3.12+** with pip
 - **Node.js 16+** and npm
 - **AWS Account** with access to:
-  - AWS Bedrock (Claude 3 Haiku model)
+  - AWS Bedrock (Nova Lite model)
   - Amazon Nova Sonic
   - EC2, SSM, and AWS Backup services
 - **AWS CLI** configured with appropriate credentials

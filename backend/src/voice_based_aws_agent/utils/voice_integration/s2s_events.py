@@ -3,9 +3,6 @@ Event definitions for Amazon Nova Sonic integration.
 Based on the s2s_events.py from Amazon Nova samples.
 """
 
-import json
-
-
 class S2sEvent:
     """
     Utility class for creating events for Amazon Nova Sonic.

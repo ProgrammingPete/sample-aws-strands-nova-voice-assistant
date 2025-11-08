@@ -26,6 +26,10 @@ class SupervisorAgent(Agent):
             specialized_agents: Dictionary mapping agent names to agent instances
             config: AgentConfig instance for AWS profile and region settings
         """
+        
+        if config is None:
+            raise RuntimeError("No config provided")
+        
         # Create properly configured Bedrock model with specified profile
         bedrock_model = create_bedrock_model(config)
 
@@ -47,7 +51,7 @@ class SupervisorAgent(Agent):
 
         # Log configuration
         logger.info(
-            "SupervisorAgent initialized with BedrockModel (configured profile, us-east-1, Claude 3 Haiku)"
+            "SupervisorAgent initialized with BedrockModel (configured profile, us-east-1, Nova Lite)"
         )
         log_conversation_config("SupervisorAgent", conversation_manager)
         logger.info(
@@ -57,24 +61,22 @@ class SupervisorAgent(Agent):
     def _get_routing_instructions(self) -> str:
         """Get the routing instructions for the supervisor."""
         return """
-You are a Supervisor Agent that acts as a pure router for AWS-related queries ONLY. Your job is to:
+You are a Supervisor Agent that acts as a pure router for customer's queries. 
 
-1. First, validate that the query is AWS-related
-2. If non-AWS, politely redirect to AWS topics
-3. For AWS queries, determine which specialized agent should handle it
-4. Route the query to the appropriate agent
-5. Return the agent's response
+1. First, validate that the query is realted to programming
+2. If non-programming, politely redirect to AWS topics
+3. Route the query to the appropriate agent
+4. Return the agent's response
 
 AWS QUERY VALIDATION:
-- ONLY handle queries about AWS services, operations, or infrastructure
-- Reject queries about: general programming, non-AWS cloud providers, personal topics, entertainment, etc.
-- For non-AWS queries, respond: "I'm specialized in AWS services only. Please ask about EC2, SSM, Backup, or other AWS services."
+- ONLY handle queries about AWS services, operations, infrastructure, or documentation and research
+- Reject queries about:  personal topics, entertainment, finance
 
 ROUTING RULES (for valid AWS queries):
-- EC2-related queries (instances, status, management) → EC2Agent
-- SSM-related queries (commands, documents, patch management) → SSMAgent  
-- Backup-related queries (backup jobs, plans, vaults) → BackupAgent
-- General AWS queries that don't fit above → EC2Agent (default)
+- AWS lambda documentation queries and general AWS questions -> AWSResearcherAgent
+- AWS EC2-related queries (instances, status, management) → EC2Agent
+- When asked to perform research on AWS → aws_researcher
+- General AWS queries that don't fit above → AWSResearcherAgent (default)
 
 CONVERSATION CONTEXT:
 - Remember which agents handled recent queries
@@ -83,14 +85,9 @@ CONVERSATION CONTEXT:
 
 DO NOT:
 - Use any tools yourself
-- Perform reasoning about AWS operations
 - Make AWS API calls
-- Provide technical solutions
-- Handle non-AWS queries
 
 ALWAYS:
-- Validate query is AWS-related first
-- Route to exactly one specialized agent (for AWS queries)
 - Pass the original user query unchanged to agents
 - Return the specialized agent's response
 - Consider conversation history for routing decisions
@@ -123,7 +120,7 @@ ALWAYS:
             # Use the Strands Agent's direct call method
             response = specialized_agent(query)
             logger.info(f"Received response from {agent_name}")
-            return response
+            return str(response)
 
         except Exception as e:
             logger.error(f"Error from {agent_name}: {str(e)}")
@@ -142,30 +139,30 @@ ALWAYS:
         query_lower = query.lower()
 
         # SSM keywords
-        ssm_keywords = [
-            "ssm",
-            "systems manager",
-            "patch",
-            "command",
-            "document",
-            "run command",
-            "session manager",
-            "parameter store",
-            "cloudwatch agent",
-            "install",
-            "configure",
-        ]
+        # ssm_keywords = [
+        #     "ssm",
+        #     "systems manager",
+        #     "patch",
+        #     "command",
+        #     "document",
+        #     "run command",
+        #     "session manager",
+        #     "parameter store",
+        #     "cloudwatch agent",
+        #     "install",
+        #     "configure",
+        # ]
 
-        # Backup keywords
-        backup_keywords = [
-            "backup",
-            "restore",
-            "vault",
-            "backup plan",
-            "backup job",
-            "recovery",
-            "snapshot",
-        ]
+        # # Backup keywords
+        # backup_keywords = [
+        #     "backup",
+        #     "restore",
+        #     "vault",
+        #     "backup plan",
+        #     "backup job",
+        #     "recovery",
+        #     "snapshot",
+        # ]
 
         # EC2 keywords (and default)
         ec2_keywords = [
@@ -179,14 +176,29 @@ ALWAYS:
             "security group",
             "vpc",
         ]
+        
+        lambda_keywords = [
+            "lambda",
+        ]
 
         # Check for SSM
-        if any(keyword in query_lower for keyword in ssm_keywords):
-            return "SSMAgent"
+        # if any(keyword in query_lower for keyword in ssm_keywords):
+        #     logger.info("SSM query detected, routing to SSMAgent")
+        #     return "SSMAgent"
 
         # Check for Backup
-        if any(keyword in query_lower for keyword in backup_keywords):
-            return "BackupAgent"
+        # if any(keyword in query_lower for keyword in backup_keywords):
+        #     logger.info("Backup query detected, routing to BackupAgent")
+        #     return "BackupAgent"
+        
+        if any(keyword in query_lower for keyword in lambda_keywords):
+            logger.info("Lambda query detected, routing to AWSResearcherAgent")
+            return "AWSResearcherAgent"
+        
+        #         # Check for EC2
+        if any(keyword in query_lower for keyword in ec2_keywords):
+            return "EC2Agent"
 
         # Default to EC2Agent for general queries
-        return "EC2Agent"
+        logger.info("Defaulting to AWSResearcherAgent for general query")
+        return "AWSResearcherAgent"
