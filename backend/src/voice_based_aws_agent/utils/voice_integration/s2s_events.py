@@ -51,7 +51,7 @@ class S2sEvent:
             {
                 "toolSpec": {
                     "name": "supervisorAgent",
-                    "description": "Routes queries to specialized agents for EC2, Backup, and SSM",
+                    "description": "Routes queries to specialized agents for EC2, and Database",
                     "inputSchema": {
                         "json": """{
                             "$schema": "http://json-schema.org/draft-07/schema#",
