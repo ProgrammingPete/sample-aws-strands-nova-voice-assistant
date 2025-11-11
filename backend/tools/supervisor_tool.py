@@ -59,7 +59,7 @@ def process_aws_query(
     query: Annotated[str, Field(description="The user query about AWS services or operations")]
 ) -> str:
     """
-    Process AWS operations through specialized agents for EC2, Backup, and SSM.
+    Process AWS operations through specialized agents.
     
     Args:
         query: The user query about AWS services or operations

@@ -75,6 +75,7 @@ class AudioPlayerProcessor extends AudioWorkletProcessor {
         super();
         this.playbackBuffer = new ExpandableBuffer();
         this.port.onmessage = (event) => {
+            console.log('onmessage', event);
             if (event.data.type === "audio") {
                 this.playbackBuffer.write(event.data.audioData);
             }

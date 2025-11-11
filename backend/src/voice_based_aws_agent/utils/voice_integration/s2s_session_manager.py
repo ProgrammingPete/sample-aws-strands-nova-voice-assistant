@@ -238,16 +238,51 @@ class S2sSessionManager:
         self.close()
 
     async def processToolUse(self, toolName, toolUseContent):
-        """Process tool use - return the result from Nova Sonic's tool execution"""
+        """Process tool use with Supervisor Agent - simplified version"""
         print(f"Tool Use Content: {toolUseContent}")
-        
+
+        toolName = toolName.lower()
+        content, result = None, None
         try:
-            if toolUseContent.get("result"):
-                return {"result": toolUseContent.get("result")}
-            elif toolUseContent.get("content"):
-                return {"result": toolUseContent.get("content")}
-            else:
-                return {"result": "Tool executed successfully"}
+            if toolUseContent.get("content"):
+                content = toolUseContent.get("content")
+                print(f"Extracted query: {content}")
+            
+            # Process with the Supervisor Agent (our main tool)
+            if toolName == "supervisoragent":
+                # Parse the content if it's JSON
+                if isinstance(content, str):
+                    try:
+                        content_obj = json.loads(content)
+                        if "query" in content_obj:
+                            query = content_obj["query"]
+                        else:
+                            query = content
+                    except:
+                        query = content
+                else:
+                    query = str(content)
+                
+                # Get the result from the supervisor agent
+                result = await self.supervisor_agent.query(query)
+                
+                # Ensure the result is a string and limit length
+                if not isinstance(result, str):
+                    if hasattr(result, 'content'):
+                        result = result.content
+                    else:
+                        result = str(result)
+                
+                # Limit result length for voice
+                if len(result) > 800:
+                    result = result[:800] + "... (truncated for voice)"
+                
+                print(f"Supervisor agent result: {result[:100]}...")
+
+            if not result:
+                result = "I couldn't process that request. Please try asking about AWS services like EC2, SSM, or Backup."
+
+            return {"result": result}
         except Exception as ex:
             print(f"Error in processToolUse: {ex}")
             return {"result": f"Sorry, I encountered an error: {str(ex)}"}
