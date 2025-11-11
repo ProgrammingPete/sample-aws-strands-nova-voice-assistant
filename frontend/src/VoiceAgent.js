@@ -181,6 +181,17 @@ class VoiceAgent extends React.Component {
                             chatMessages[contentId].raw = [];
                         chatMessages[contentId].raw.push(message);
                         chatMessages[contentId].stopReason = stopReason;
+                        
+                        // Remove duplicates: if another message has identical content, remove it
+                        const currentContent = chatMessages[contentId].content;
+                        const currentRole = chatMessages[contentId].role;
+                        Object.keys(chatMessages).forEach(key => {
+                            if (key !== contentId && 
+                                chatMessages[key].content === currentContent && 
+                                chatMessages[key].role === currentRole) {
+                                delete chatMessages[key];
+                            }
+                        });
                     }
                     this.setState({chatMessages: chatMessages});
                 }
@@ -324,7 +335,7 @@ class VoiceAgent extends React.Component {
                         {
                             "toolSpec": {
                                 "name": "supervisorAgent",
-                                "description": "Routes queries to specialized agents for EC2 and AWS documentation",
+                                "description": "Routes queries to specialized agents for EC2 and AWS documentation as well as database queries",
                                 "inputSchema": {
                                     "json": JSON.stringify({
                                         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -544,7 +555,7 @@ class VoiceAgent extends React.Component {
         const messages = Object.values(this.state.chatMessages).sort((a, b) => {
             return (a.raw[0]?.timestamp || 0) - (b.raw[0]?.timestamp || 0);
         });
-
+        console.log(messages);
         return messages.map((message, index) => {
             const isUser = message.role === "USER";
             const isAssistant = message.role === "ASSISTANT";
