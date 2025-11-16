@@ -12,6 +12,8 @@ from ..utils.prompt_consent import get_consent_instructions
 import logging
 import os
 
+# Enable debug logging
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -31,7 +33,9 @@ class InvoiceAgent(Agent):
             raise RuntimeError("SUPABASE_PASSWORD environment variable not set")
         
         # Store MCP PostgreSQL client for Supabase (Transaction mode)
-        connection_string = f"postgresql://postgres.emdlwkjdqbsbeeamgffq:{supabase_password}@aws-0-us-east-1.pooler.supabase.com:6543/postgres"
+        connection_string = f"postgresql://postgres.emdlwkjdqbsbeeamgffq:{supabase_password}@aws-1-us-east-2.pooler.supabase.com:6543/postgres"
+        
+        logger.debug(f"Creating MCP client with connection string: {connection_string[:50]}...")
         
         self.postgres_mcp_client = MCPClient(
             lambda: stdio_client(
@@ -41,6 +45,9 @@ class InvoiceAgent(Agent):
                 )
             )
         )
+        
+        logger.debug(f"MCP client created: {self.postgres_mcp_client}")
+        logger.debug(f"MCP client type: {type(self.postgres_mcp_client)}")
         
         # Create properly configured Bedrock model
         bedrock_model = create_bedrock_model(config)
