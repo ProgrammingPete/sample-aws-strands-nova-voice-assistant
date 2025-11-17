@@ -16,5 +16,6 @@ dependencies = [
     "smithy-aws-core>=0.0.1",
     "strands-agents>=0.1.0",
     "strands-agents-tools>=0.1.0",
+    "supabase>=2.6.0",
     "websockets==10.4",
 ]

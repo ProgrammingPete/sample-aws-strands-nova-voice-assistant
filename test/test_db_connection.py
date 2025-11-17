@@ -23,19 +23,21 @@ from dotenv import load_dotenv
 def test_connection():
     # Load environment variables from .env file
     load_dotenv()
-    password = os.getenv('SUPABASE_PASSWORD')
-    if not password:
-        print("SUPABASE_PASSWORD not set")
+    conn_string = os.getenv('SUPABASE_POOL_CONNECTION')
+    if not conn_string:
+        print("SUPABASE_CONNECTION not set")
         return
-    
-    conn_string = f"postgresql://postgres.emdlwkjdqbsbeeamgffq:{password}@aws-1-us-east-2.pooler.supabase.com:6543/postgres"
     
     try:
         conn = psycopg2.connect(conn_string)
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM invoices")
-        count = cursor.fetchone()[0]
-        print(f"Connection successful! Found {count} invoices")
+        result = cursor.fetchone()
+        if result:
+            count = result[0]
+            print(f"Connection successful! Found {count} invoices")
+        else:
+            print("Connection successful but no data returned")
         conn.close()
     except Exception as e:
         print(f"Connection failed: {e}")
