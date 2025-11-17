@@ -10,6 +10,7 @@ from .ec2_agent import EC2Agent
 # from .old_agents.ssm_agent import SSMAgent
 # from .old_agents.backup_agent import BackupAgent
 from .aws_researcher_agent import AWSResearcherAgent
+from .invoice_agent import InvoiceAgent
 from ..config.tool_config import setup_tool_environment, get_tool_config
 from ..config.conversation_config import ConversationConfig
 
@@ -49,7 +50,8 @@ class AgentOrchestrator:
                 "EC2Agent": EC2Agent(self.config),
                 # "SSMAgent": SSMAgent(self.config),
                 # "BackupAgent": BackupAgent(self.config),
-                "AWSResearcherAgent": AWSResearcherAgent(self.config)
+                "AWSResearcherAgent": AWSResearcherAgent(self.config),
+                "InvoiceAgent" : InvoiceAgent(self.config)
             }
 
             # Create supervisor with references to specialized agents

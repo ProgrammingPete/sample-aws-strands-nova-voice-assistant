@@ -9,11 +9,13 @@ dependencies = [
     "aws-sdk-bedrock-runtime>=0.1.1",
     "boto3>=1.28.0",
     "numpy>=1.24.0",
+    "psycopg2-binary>=2.9.11",
     "pyaudio>=0.2.13",
     "python-dotenv>=1.0.0",
     "rx>=3.2.0",
     "smithy-aws-core>=0.0.1",
     "strands-agents>=0.1.0",
     "strands-agents-tools>=0.1.0",
+    "supabase>=2.6.0",
     "websockets==10.4",
 ]
