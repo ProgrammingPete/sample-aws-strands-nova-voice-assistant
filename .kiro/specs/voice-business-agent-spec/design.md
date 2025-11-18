@@ -2,12 +2,12 @@
 
 ## Overview
 
-The Voice-Based Painting Business Agent is a real-time voice assistant that enables painting contractors to manage their business operations through natural speech. The system implements a secure multi-agent architecture where an Agent Orchestrator manages the system lifecycle, a Supervisor Agent routes queries to specialized painting business agents, and each agent operates with strict user authentication and data isolation.
+The Voice-Based Painting Business Agent is a real-time voice assistant that enables painting contractors to manage their business operations through natural speech. The system implements a multi-agent architecture where an Agent Orchestrator manages the system lifecycle, and a Supervisor Agent routes queries to specialized painting business agents.
 
 The system consists of three main layers:
 1. **Frontend Layer**: React-based web interface with AWS Cloudscape components for voice and text interaction
-2. **Backend Layer**: Python-based multi-agent system using the AWS Strands framework with secure user authentication
-3. **Data Layer**: Supabase PostgreSQL database with Row Level Security (RLS) policies for multi-tenant data isolation
+2. **Backend Layer**: Python-based multi-agent system using the AWS Strands framework
+3. **Data Layer**: Supabase PostgreSQL database
 
 The system manages the complete lifecycle of a painting business including client contacts, painting projects with detailed specifications (paint type, brand, color, square footage), project proposals and estimates, invoices and billing, appointments for consultations and work, customer reviews, marketing campaigns, project tasks, and business goal tracking.
 
@@ -21,11 +21,10 @@ graph TB
         UI[Voice/Text Interface]
         WS_CLIENT[WebSocket Client]
         AUDIO[Audio Processing]
-        AUTH_UI[Authentication UI]
     end
     
     subgraph "Backend (Python)"
-        WS_SERVER[WebSocket Server + Auth]
+        WS_SERVER[WebSocket Server]
         ORCHESTRATOR[Agent Orchestrator]
         SUPERVISOR[Supervisor Agent]
         
@@ -48,7 +47,6 @@ graph TB
         SUPABASE[Supabase DB + Auth]
     end
     
-    AUTH_UI --> SUPABASE
     UI --> WS_CLIENT
     WS_CLIENT <--> WS_SERVER
     WS_SERVER --> ORCHESTRATOR
@@ -86,37 +84,6 @@ graph TB
     SETTINGS --> SUPABASE
 ```
 
-### Security Architecture
-
-```mermaid
-graph TB
-    subgraph "Authentication Flow"
-        USER[User Login]
-        SUPABASE_AUTH[Supabase Auth]
-        JWT[JWT Token]
-        SESSION[Secure Session]
-    end
-    
-    subgraph "Request Flow with Security"
-        REQUEST[User Request]
-        TOKEN_VALIDATION[Token Validation]
-        USER_CONTEXT[User Context Extraction]
-        AGENT_CALL[Agent Processing]
-        RLS_FILTER[RLS Policy Filter]
-        RESPONSE[Filtered Response]
-    end
-    
-    USER --> SUPABASE_AUTH
-    SUPABASE_AUTH --> JWT
-    JWT --> SESSION
-    
-    REQUEST --> TOKEN_VALIDATION
-    TOKEN_VALIDATION --> USER_CONTEXT
-    USER_CONTEXT --> AGENT_CALL
-    AGENT_CALL --> RLS_FILTER
-    RLS_FILTER --> RESPONSE
-```
-
 ### Multi-Agent System Design
 
 The system implements a hub-and-spoke architecture with clear separation of concerns:
@@ -131,25 +98,23 @@ The system supports two distinct input methods with different processing paths:
 
 #### Voice Input Flow (via Nova Sonic)
 
-1. User authenticates → Receives JWT token
-2. User speaks → Frontend captures audio with user context
-3. Frontend streams audio via WebSocket → Backend validates JWT token
-4. Audio forwarded to Nova Sonic bidirectional stream → Transcribed to text
-5. WebSocket server extracts user_id → Passes text query to Agent Orchestrator
-6. Orchestrator processes query → Supervisor Agent analyzes and routes
-7. Specialized agent processes with user context → Database applies RLS filtering
-8. Response text sent to Nova Sonic → Synthesized to audio
-9. Audio streams back through WebSocket → Frontend plays audio
+1. User speaks → Frontend captures audio
+2. Frontend streams audio via WebSocket → Backend receives audio
+3. Audio forwarded to Nova Sonic bidirectional stream → Transcribed to text
+4. WebSocket server passes text query to Agent Orchestrator
+5. Orchestrator processes query → Supervisor Agent analyzes and routes
+6. Specialized agent processes query → Database operations
+7. Response text sent to Nova Sonic → Synthesized to audio
+8. Audio streams back through WebSocket → Frontend plays audio
 
 #### Text Input Flow (Direct to Agents)
 
-1. User authenticates → Receives JWT token
-2. User types message → Frontend captures text with user context
-3. Frontend sends text via WebSocket → Backend validates JWT token
-4. WebSocket server extracts user_id → Passes text query directly to Agent Orchestrator
-5. Orchestrator processes query → Supervisor Agent analyzes and routes
-6. Specialized agent processes with user context → Database applies RLS filtering
-7. Response text flows back through WebSocket → Frontend displays as text
+1. User types message → Frontend captures text
+2. Frontend sends text via WebSocket → Backend receives text
+3. WebSocket server passes text query directly to Agent Orchestrator
+4. Orchestrator processes query → Supervisor Agent analyzes and routes
+5. Specialized agent processes query → Database operations
+6. Response text flows back through WebSocket → Frontend displays as text
 
 **Key Difference**: Text input bypasses Nova Sonic entirely and goes directly to the Agent Orchestrator, while voice input must pass through Nova Sonic for transcription and synthesis. Both paths share the same agent routing logic and maintain conversation context in the database.
 
@@ -157,130 +122,94 @@ The system supports two distinct input methods with different processing paths:
 
 ### Frontend Components
 
-#### Authentication Component
-- **Purpose**: Handles user login/logout and token management
-- **Integration**: Supabase Auth SDK for authentication
-- **Token Storage**: Secure storage of JWT tokens with automatic refresh
-- **Session Management**: Maintains user session state across page reloads
-
 #### VoiceAgent Component
 - **Purpose**: Main React component managing voice and text interaction
 - **Responsibilities**:
-  - WebSocket connection with JWT token authentication
-  - Audio capture and playback with security validation
-  - Chat message display with user context
-  - Configuration management with user preferences
+  - WebSocket connection management
+  - Audio capture and playback
+  - Chat message display
+  - Configuration management
 - **Key Methods**:
-  - `authenticateAndConnect()`: Establishes authenticated WebSocket connection
-  - `handleSessionChange()`: Starts/stops voice sessions with user validation
-  - `sendSecureMessage()`: Sends messages with user authentication headers
+  - `handleSessionChange()`: Starts/stops voice sessions
+  - `sendMessage()`: Sends messages via WebSocket
 
 #### Audio Processing
-- **AudioPlayer**: Manages audio playback with user session validation
-- **Audio Security**: Validates audio chunks and enforces user session limits
-- **Resampling**: Converts audio to 16kHz with security boundaries
+- **AudioPlayer**: Manages audio playback
+- **Resampling**: Converts audio to 16kHz
 
 ### Backend Components
 
 #### WebSocket Server (`server.py`)
-- **Purpose**: Manages real-time communication with authentication
+- **Purpose**: Manages real-time communication
 - **Responsibilities**:
-  - JWT token validation on connection and per message
-  - User context extraction and session management
-  - Audio streaming with user authentication
-  - Nova Sonic integration with user isolation
-- **Security Features**:
-  - Token expiration handling and refresh
-  - Rate limiting per user
-  - Audit logging of all user actions
+  - WebSocket connection management
+  - Audio streaming
+  - Nova Sonic integration
 
 #### Agent Orchestrator (`orchestrator.py`)
-- **Purpose**: Central coordinator with security enforcement
+- **Purpose**: Central coordinator
 - **Responsibilities**:
-  - Agent lifecycle management with user context
-  - Query processing coordination with authentication
-  - Tool environment setup with security policies
-  - System status monitoring with user isolation
-- **Security Integration**:
-  - User context propagation to all agents
-  - Security policy enforcement
-  - Audit trail maintenance
+  - Agent lifecycle management
+  - Query processing coordination
+  - Tool environment setup
+  - System status monitoring
 
 #### Supervisor Agent (`supervisor_agent.py`)
-- **Purpose**: Intelligent routing with security validation
-- **Routing Logic with Security**:
-  - Client contact/customer queries → Contacts_Agent (with user validation)
-  - Painting project queries → Projects_Agent (with user validation)
-  - Scheduling/appointment queries → Appointments_Agent (with user validation)
-  - Proposal/estimate queries → Proposals_Agent (with user validation)
-  - Invoice/billing queries → Invoices_Agent (with user validation)
-  - Review/feedback queries → Reviews_Agent (with user validation)
-  - Marketing/campaign queries → Marketing_Agent (with user validation)
-  - Task/to-do queries → Tasks_Agent (with user validation)
-  - Settings/goals queries → Settings_Agent (with user validation)
-- **Security Features**:
-  - User context validation before routing
-  - Query sanitization and validation
-  - Audit logging of routing decisions
+- **Purpose**: Intelligent routing
+- **Routing Logic**:
+  - Client contact/customer queries → Contacts_Agent
+  - Painting project queries → Projects_Agent
+  - Scheduling/appointment queries → Appointments_Agent
+  - Proposal/estimate queries → Proposals_Agent
+  - Invoice/billing queries → Invoices_Agent
+  - Review/feedback queries → Reviews_Agent
+  - Marketing/campaign queries → Marketing_Agent
+  - Task/to-do queries → Tasks_Agent
+  - Settings/goals queries → Settings_Agent
 
 #### Painting Business Agents
 
 **Contacts Agent**:
-- **Database Access**: Contacts table with RLS filtering by user_id
+- **Database Access**: Contacts table
 - **Capabilities**: CRUD operations on client contacts with relationship tracking to projects, invoices, appointments
-- **Security**: Validates user ownership of all contact records and related data
 
 **Projects Agent**:
-- **Database Access**: Projects table with RLS filtering by user_id
+- **Database Access**: Projects table
 - **Capabilities**: Painting project management including specifications (paint type, brand, color, coats, primer), square footage, costs, timelines, completion tracking
-- **Security**: Validates user ownership of all project records and related client relationships
 
 **Appointments Agent**:
-- **Database Access**: Appointments table with RLS filtering and client relationship validation
-- **Capabilities**: Scheduling consultations and painting work, conflict detection, status management with user isolation
-- **Security**: Ensures appointments only accessible via user-owned clients and projects
+- **Database Access**: Appointments table
+- **Capabilities**: Scheduling consultations and painting work, conflict detection, status management
 
 **Proposals Agent**:
-- **Database Access**: Proposals table with client relationship validation
+- **Database Access**: Proposals table
 - **Capabilities**: Painting proposal/estimate creation, tracking, pricing calculations with sections and terms
-- **Security**: Validates user owns client relationship before proposal access
 
 **Invoices Agent**:
-- **Database Access**: Invoices table with RLS filtering and project/client relationship validation
+- **Database Access**: Invoices table
 - **Capabilities**: Invoice generation for painting projects, payment tracking, line items, balance calculations
-- **Security**: Ensures invoices only accessible via user-owned projects or clients
 
 **Reviews Agent**:
-- **Database Access**: Reviews table with project/client relationship validation
-- **Capabilities**: Customer review management for completed painting projects, response handling, analytics with user filtering
-- **Security**: Ensures reviews only accessible via user-owned projects or clients
+- **Database Access**: Reviews table
+- **Capabilities**: Customer review management for completed painting projects, response handling, analytics
 
 **Marketing Agent**:
-- **Database Access**: Campaigns table with user ownership filtering
+- **Database Access**: Campaigns table
 - **Capabilities**: Marketing campaign management for painting services, performance tracking, ROI analysis
-- **Security**: Restricts access to user-created or assigned campaigns
 
 **Tasks Agent**:
-- **Database Access**: Tasks table with RLS filtering and project/client relationship validation
+- **Database Access**: Tasks table
 - **Capabilities**: Task and to-do management for painting projects, checklist tracking, assignment management
-- **Security**: Ensures tasks only accessible via user-owned projects or clients
 
 **Settings Agent**:
-- **Database Access**: Settings and goals tables with user-specific filtering
-- **Capabilities**: Business goal tracking with progress calculations, system preferences with user isolation
-- **Security**: Ensures only authorized users can modify their own configuration and goal data
+- **Database Access**: Settings and goals tables
+- **Capabilities**: Business goal tracking with progress calculations, system preferences
 
 ### Integration Interfaces
 
-#### Supabase Authentication Integration
-- **JWT Token Management**: Automatic token generation, validation, and refresh
-- **User Context**: Seamless user_id extraction and propagation
-- **Session Security**: Secure session management with automatic cleanup
-
-#### Supabase Database Integration with RLS
-- **Row Level Security**: Automatic filtering of all queries by user ownership
-- **Policy Enforcement**: Database-level security that cannot be bypassed
-- **Audit Trail**: Comprehensive logging of all data access and modifications
+#### Supabase Database Integration
+- **Database Operations**: CRUD operations on painting business tables
+- **Relationship Management**: Tracking relationships between contacts, projects, invoices, etc.
 
 #### Nova Sonic Integration
 
@@ -316,17 +245,11 @@ Nova Sonic provides a unified speech-to-speech model through a single bidirectio
 - Tool results sent back through stream as `toolResult` events
 - Conversation continues seamlessly after tool execution
 
-**Security Features**:
-- User session validation for all audio operations
-- User-specific voice settings and preferences
-- Encrypted audio streaming with user context
-- Rate limiting and audit logging per user session
-
 ## Data Models
 
 ### Supabase Database Schema
 
-The system uses Supabase PostgreSQL with the following existing tables in the `api` schema. **Note: RLS is currently disabled on all tables and `user_id` columns need to be added for proper multi-tenancy.**
+The system uses Supabase PostgreSQL with the following existing tables in the `api` schema.
 
 **Existing Tables in `api` schema:**
 - `contacts` - Customer/client information
@@ -343,57 +266,31 @@ The system uses Supabase PostgreSQL with the following existing tables in the `a
 **Missing Tables (need to be created):**
 - `settings` - System configuration key-value store (Requirements 12.1-12.2)
 
-**Required Schema Changes:**
-1. Add `user_id UUID` column to all tables with:
-   - NOT NULL constraint
-   - Foreign key to `auth.users(id)`
-   - Index for query performance
-2. Enable RLS on all tables in `api` schema
-3. Create RLS policies to filter by `user_id = auth.uid()`
-4. Add key-value store table for settings (or use existing table in another schema)
-
 **Foreign Key Relationships:**
 - `contacts` ← `projects`, `invoices`, `proposals`, `appointments`, `reviews`, `conversations`, `tasks`
 - `projects` ← `invoices`, `tasks`, `reviews`, `appointments`
 
-### User Authentication Model
+### Voice Session Model
 ```python
-class UserSession:
-    user_id: str
-    jwt_token: str
-    refresh_token: str
+class VoiceSession:
     session_id: str
-    expires_at: datetime
-    permissions: List[str]
-    last_activity: datetime
-```
-
-### Secure Voice Session Model
-```python
-class SecureVoiceSession:
-    session_id: str
-    user_id: str  # Links to authenticated user
     websocket_connection: WebSocket
     audio_stream: AudioStream
     conversation_state: ConversationState
     agent_context: Dict[str, Any]
-    security_context: SecurityContext
     start_time: datetime
     last_activity: datetime
 ```
 
-### Agent Message Model with Security
+### Agent Message Model
 ```python
-class SecureAgentMessage:
+class AgentMessage:
     content_id: str
-    user_id: str  # Always includes user context
     role: Literal["USER", "ASSISTANT"]
     content: str
     content_type: Literal["TEXT", "AUDIO"]
     timestamp: datetime
     agent_name: Optional[str]
-    security_level: str
-    audit_trail: Dict[str, Any]
 ```
 
 ### Database Models (Actual Supabase Schema)
@@ -402,7 +299,6 @@ class SecureAgentMessage:
 ```python
 class Contact:
     id: UUID
-    # user_id: UUID  # NEEDS TO BE ADDED for RLS
     name: str
     email: Optional[str]
     phone: Optional[str]
@@ -869,71 +765,7 @@ class Setting:
 *For any* valid goal update, the Settings_Agent should update current_value and automatically calculate progress_percentage correctly
 **Validates: Requirements 12.4**
 
-### Security Properties
-
-**Property 46: User authentication establishment**
-*For any* valid user connection, the system should authenticate the user and establish a secure session with user identity
-**Validates: Requirements 13.1**
-
-**Property 47: Permission validation consistency**
-*For any* agent query, the system should validate that the user has permission to access the requested data
-**Validates: Requirements 13.2**
-
-**Property 48: Data isolation enforcement**
-*For any* database query, the system should filter all results by the authenticated user's ID to ensure data isolation
-**Validates: Requirements 13.3**
-
-**Property 49: RLS policy application**
-*For any* data request, the system should apply Row Level Security policies to restrict access to user-owned records
-**Validates: Requirements 13.4**
-
-**Property 50: Token validation enforcement**
-*For any* expired or invalid session token, the system should reject requests and require re-authentication
-**Validates: Requirements 13.5**
-
-**Property 51: Contact data isolation**
-*For any* contact query, the Contacts_Agent should ensure only contacts belonging to the authenticated user are returned
-**Validates: Requirements 14.1**
-
-**Property 52: Appointment access control**
-*For any* appointment query, the Appointments_Agent should filter appointments by user ownership and client relationships
-**Validates: Requirements 14.2**
-
-**Property 53: Proposal ownership verification**
-*For any* proposal request, the Proposals_Agent should verify the user owns the client relationship before accessing proposal data
-**Validates: Requirements 14.3**
-
-**Property 54: Review access control**
-*For any* review request, the Reviews_Agent should ensure reviews are only accessible if linked to user-owned projects or clients
-**Validates: Requirements 14.4**
-
-**Property 55: Campaign access restriction**
-*For any* campaign request, the Marketing_Agent should restrict access to campaigns created by or assigned to the authenticated user
-**Validates: Requirements 14.5**
-
-**Property 56: Audit logging completeness**
-*For any* database modification, the system should log the user ID, timestamp, operation type, and affected records
-**Validates: Requirements 15.1**
-
-**Property 57: Security violation logging**
-*For any* data validation failure, the system should reject the operation and log the security violation attempt
-**Validates: Requirements 15.2**
-
-**Property 58: Cross-table relationship validation**
-*For any* cross-table access, the system should validate that all related records belong to the same user
-**Validates: Requirements 15.3**
-
-**Property 59: Conversation security enforcement**
-*For any* conversation storage, the system should associate messages with the authenticated user and encrypt sensitive content
-**Validates: Requirements 15.4**
-
 ## Error Handling
-
-### Authentication and Authorization Errors
-- **Invalid JWT Tokens**: Automatic rejection with clear re-authentication prompts
-- **Expired Sessions**: Graceful session termination with secure cleanup
-- **Permission Denied**: Clear error messages without exposing system internals
-- **RLS Policy Violations**: Automatic filtering with audit logging
 
 ### Audio Processing Errors
 - **Microphone Access Denied**: Fallback to text-only mode with user guidance
@@ -960,66 +792,54 @@ class Setting:
 The system requires both unit testing and property-based testing to ensure comprehensive coverage:
 
 **Unit Tests**:
-- Verify specific authentication flows and security scenarios
 - Test individual agent functionality with mocked dependencies
-- Validate database operations and RLS policy enforcement
+- Validate database operations
 - Cover UI interactions and state transitions
 
 **Property-Based Tests**:
-- Verify universal properties across all valid inputs with user context
-- Test system behavior with generated data and user scenarios
-- Validate security properties with various user permission combinations
+- Verify universal properties across all valid inputs
+- Test system behavior with generated data
 - Use **Hypothesis** (Python) for backend property testing and **fast-check** (JavaScript) for frontend property testing
 
 ### Property-Based Testing Configuration
 
 - **Minimum Iterations**: Each property-based test must run at least 100 iterations
-- **Test Tagging**: Each property-based test must include a comment with the format: `**Feature: voice-aws-agent, Property {number}: {property_text}**`
+- **Test Tagging**: Each property-based test must include a comment with the format: `**Feature: voice-business-agent, Property {number}: {property_text}**`
 - **Single Property Implementation**: Each correctness property must be implemented by exactly one property-based test
-- **Security Context**: All property tests must include user authentication and permission scenarios
 
 ### Test Categories
 
-**Authentication and Security Tests**:
-- Unit tests for JWT token validation and user session management
-- Property tests for RLS policy enforcement across all data access patterns
-- Security tests for permission validation and audit logging
-- Integration tests for end-to-end authentication flows
-
 **Business Agent Tests**:
-- Unit tests for individual agent CRUD operations with user context
-- Property tests for query routing and response handling with security validation
-- Integration tests for cross-agent data relationships and user isolation
-- Performance tests for concurrent user sessions
+- Unit tests for individual agent CRUD operations
+- Property tests for query routing and response handling
+- Integration tests for cross-agent data relationships
+- Performance tests for concurrent sessions
 
 **Voice and Text Processing Tests**:
-- Unit tests for audio processing with user session validation
+- Unit tests for audio processing
 - Property tests for conversation context management across input methods
-- Integration tests for Nova Sonic communication with user authentication
+- Integration tests for Nova Sonic communication
 - Load tests for concurrent voice sessions
 
 **Database Integration Tests**:
-- Unit tests for Supabase operations with RLS policy validation
-- Property tests for data isolation and relationship integrity
-- Security tests for SQL injection prevention and access control
-- Performance tests for query optimization with user filtering
+- Unit tests for Supabase operations
+- Property tests for relationship integrity
+- Performance tests for query optimization
 
 ### Test Environment Setup
 
 **Backend Testing**:
-- Mock Supabase services with RLS policy simulation
-- Test fixtures for user authentication and permission scenarios
-- Automated test data generation with user context for property tests
-- Security test harness for permission validation
+- Mock Supabase services
+- Test fixtures for painting business data
+- Automated test data generation for property tests
 
 **Frontend Testing**:
-- Mock WebSocket connections with authentication simulation
-- Audio processing simulation with user session context
-- Component testing with React Testing Library and user authentication
-- End-to-end testing with Cypress including login flows
+- Mock WebSocket connections
+- Audio processing simulation
+- Component testing with React Testing Library
+- End-to-end testing with Cypress
 
 **Integration Testing**:
-- End-to-end voice and text interaction scenarios with multiple users
-- Cross-component communication validation with security context
-- Performance and reliability testing under concurrent user load
-- Security penetration testing for authentication and authorization
+- End-to-end voice and text interaction scenarios
+- Cross-component communication validation
+- Performance and reliability testing
