@@ -2,12 +2,14 @@
 
 ## Overview
 
-The Voice-Based Business Agent is a real-time voice assistant that enables users to interact with business operations through natural speech. The system implements a secure multi-agent architecture where an Agent Orchestrator manages the system lifecycle, a Supervisor Agent routes queries to specialized business agents, and each agent operates with strict user authentication and data isolation.
+The Voice-Based Painting Business Agent is a real-time voice assistant that enables painting contractors to manage their business operations through natural speech. The system implements a secure multi-agent architecture where an Agent Orchestrator manages the system lifecycle, a Supervisor Agent routes queries to specialized painting business agents, and each agent operates with strict user authentication and data isolation.
 
 The system consists of three main layers:
 1. **Frontend Layer**: React-based web interface with AWS Cloudscape components for voice and text interaction
 2. **Backend Layer**: Python-based multi-agent system using the AWS Strands framework with secure user authentication
-3. **Data Layer**: Supabase PostgreSQL database with Row Level Security (RLS) policies for data isolation
+3. **Data Layer**: Supabase PostgreSQL database with Row Level Security (RLS) policies for multi-tenant data isolation
+
+The system manages the complete lifecycle of a painting business including client contacts, painting projects with detailed specifications (paint type, brand, color, square footage), project proposals and estimates, invoices and billing, appointments for consultations and work, customer reviews, marketing campaigns, project tasks, and business goal tracking.
 
 ## Architecture
 
@@ -27,12 +29,15 @@ graph TB
         ORCHESTRATOR[Agent Orchestrator]
         SUPERVISOR[Supervisor Agent]
         
-        subgraph "Business Agents"
+        subgraph "Painting Business Agents"
             CONTACTS[Contacts Agent]
+            PROJECTS[Projects Agent]
             APPOINTMENTS[Appointments Agent]
             PROPOSALS[Proposals Agent]
+            INVOICES[Invoices Agent]
             REVIEWS[Reviews Agent]
             MARKETING[Marketing Agent]
+            TASKS[Tasks Agent]
             SETTINGS[Settings Agent]
         end
     end
@@ -49,26 +54,35 @@ graph TB
     WS_SERVER --> ORCHESTRATOR
     ORCHESTRATOR --> SUPERVISOR
     SUPERVISOR --> CONTACTS
+    SUPERVISOR --> PROJECTS
     SUPERVISOR --> APPOINTMENTS
     SUPERVISOR --> PROPOSALS
+    SUPERVISOR --> INVOICES
     SUPERVISOR --> REVIEWS
     SUPERVISOR --> MARKETING
+    SUPERVISOR --> TASKS
     SUPERVISOR --> SETTINGS
     
     WS_SERVER <--> NOVA
     SUPERVISOR --> BEDROCK
     CONTACTS --> BEDROCK
+    PROJECTS --> BEDROCK
     APPOINTMENTS --> BEDROCK
     PROPOSALS --> BEDROCK
+    INVOICES --> BEDROCK
     REVIEWS --> BEDROCK
     MARKETING --> BEDROCK
+    TASKS --> BEDROCK
     SETTINGS --> BEDROCK
     
     CONTACTS --> SUPABASE
+    PROJECTS --> SUPABASE
     APPOINTMENTS --> SUPABASE
     PROPOSALS --> SUPABASE
+    INVOICES --> SUPABASE
     REVIEWS --> SUPABASE
     MARKETING --> SUPABASE
+    TASKS --> SUPABASE
     SETTINGS --> SUPABASE
 ```
 
@@ -109,7 +123,7 @@ The system implements a hub-and-spoke architecture with clear separation of conc
 
 1. **Agent Orchestrator**: System lifecycle manager and main entry point
 2. **Supervisor Agent**: Intelligent query router with AI-powered decision making
-3. **Business Agents**: Domain-specific agents for different business operations
+3. **Painting Business Agents**: Domain-specific agents for different painting business operations (contacts, projects, appointments, proposals, invoices, reviews, marketing, tasks, settings)
 
 ### Communication Flow
 
@@ -195,48 +209,66 @@ The system supports two distinct input methods with different processing paths:
 #### Supervisor Agent (`supervisor_agent.py`)
 - **Purpose**: Intelligent routing with security validation
 - **Routing Logic with Security**:
-  - Contact/customer queries → Contacts_Agent (with user validation)
-  - Scheduling queries → Appointments_Agent (with user validation)
-  - Proposal queries → Proposals_Agent (with user validation)
-  - Review queries → Reviews_Agent (with user validation)
-  - Marketing queries → Marketing_Agent (with user validation)
-  - Settings queries → Settings_Agent (with user validation)
+  - Client contact/customer queries → Contacts_Agent (with user validation)
+  - Painting project queries → Projects_Agent (with user validation)
+  - Scheduling/appointment queries → Appointments_Agent (with user validation)
+  - Proposal/estimate queries → Proposals_Agent (with user validation)
+  - Invoice/billing queries → Invoices_Agent (with user validation)
+  - Review/feedback queries → Reviews_Agent (with user validation)
+  - Marketing/campaign queries → Marketing_Agent (with user validation)
+  - Task/to-do queries → Tasks_Agent (with user validation)
+  - Settings/goals queries → Settings_Agent (with user validation)
 - **Security Features**:
   - User context validation before routing
   - Query sanitization and validation
   - Audit logging of routing decisions
 
-#### Business Agents
+#### Painting Business Agents
 
 **Contacts Agent**:
 - **Database Access**: Contacts table with RLS filtering by user_id
-- **Capabilities**: CRUD operations on user's contacts with relationship tracking
+- **Capabilities**: CRUD operations on client contacts with relationship tracking to projects, invoices, appointments
 - **Security**: Validates user ownership of all contact records and related data
+
+**Projects Agent**:
+- **Database Access**: Projects table with RLS filtering by user_id
+- **Capabilities**: Painting project management including specifications (paint type, brand, color, coats, primer), square footage, costs, timelines, completion tracking
+- **Security**: Validates user ownership of all project records and related client relationships
 
 **Appointments Agent**:
 - **Database Access**: Appointments table with RLS filtering and client relationship validation
-- **Capabilities**: Scheduling, conflict detection, status management with user isolation
+- **Capabilities**: Scheduling consultations and painting work, conflict detection, status management with user isolation
 - **Security**: Ensures appointments only accessible via user-owned clients and projects
 
 **Proposals Agent**:
 - **Database Access**: Proposals table with client relationship validation
-- **Capabilities**: Proposal creation, tracking, pricing calculations with user context
+- **Capabilities**: Painting proposal/estimate creation, tracking, pricing calculations with sections and terms
 - **Security**: Validates user owns client relationship before proposal access
+
+**Invoices Agent**:
+- **Database Access**: Invoices table with RLS filtering and project/client relationship validation
+- **Capabilities**: Invoice generation for painting projects, payment tracking, line items, balance calculations
+- **Security**: Ensures invoices only accessible via user-owned projects or clients
 
 **Reviews Agent**:
 - **Database Access**: Reviews table with project/client relationship validation
-- **Capabilities**: Review management, response handling, analytics with user filtering
+- **Capabilities**: Customer review management for completed painting projects, response handling, analytics with user filtering
 - **Security**: Ensures reviews only accessible via user-owned projects or clients
 
 **Marketing Agent**:
 - **Database Access**: Campaigns table with user ownership filtering
-- **Capabilities**: Campaign management, performance tracking, ROI analysis with user context
+- **Capabilities**: Marketing campaign management for painting services, performance tracking, ROI analysis
 - **Security**: Restricts access to user-created or assigned campaigns
 
+**Tasks Agent**:
+- **Database Access**: Tasks table with RLS filtering and project/client relationship validation
+- **Capabilities**: Task and to-do management for painting projects, checklist tracking, assignment management
+- **Security**: Ensures tasks only accessible via user-owned projects or clients
+
 **Settings Agent**:
-- **Database Access**: KV store and goals tables with user-specific filtering
-- **Capabilities**: Configuration management, goal tracking, system preferences with user isolation
-- **Security**: Ensures only authorized users can modify configuration data
+- **Database Access**: Settings and goals tables with user-specific filtering
+- **Capabilities**: Business goal tracking with progress calculations, system preferences with user isolation
+- **Security**: Ensures only authorized users can modify their own configuration and goal data
 
 ### Integration Interfaces
 

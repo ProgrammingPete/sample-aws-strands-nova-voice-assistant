@@ -2,19 +2,22 @@
 
 ## Introduction
 
-The Voice-Based Business Agent is a real-time voice assistant that enables users to interact with business operations through natural speech. The system uses Amazon Nova Sonic for voice processing, AWS Bedrock for AI reasoning, and a multi-agent architecture to handle different types of business queries. Users can speak to the system to manage contacts, schedule appointments, handle proposals, manage reviews, coordinate marketing activities, and configure system settings.
+The Voice-Based Painting Business Agent is a real-time voice assistant that enables painting contractors to manage their business operations through natural speech. The system uses Amazon Nova Sonic for voice processing, AWS Bedrock for AI reasoning, and a multi-agent architecture to handle different types of painting business queries. Users can speak to the system to manage client contacts, schedule painting appointments, handle project proposals, manage customer reviews, coordinate marketing campaigns, track painting projects and invoices, and configure system settings.
 
 ## Glossary
 
-- **Voice_Assistant**: The complete voice-based business assistant application
+- **Voice_Assistant**: The complete voice-based painting business assistant application
 - **Agent_Orchestrator**: The central coordinator that manages the lifecycle of all agents, sets up the environment, and provides the main query processing interface
 - **Supervisor_Agent**: The routing agent that directs user queries to appropriate specialized agents
-- **Contacts_Agent**: Specialized agent that handles contact management and customer relationship operations
-- **Appointments_Agent**: Specialized agent that manages scheduling and calendar operations
-- **Proposals_Agent**: Specialized agent that handles proposal creation, tracking, and management
-- **Reviews_Agent**: Specialized agent that manages customer reviews and feedback
-- **Marketing_Agent**: Specialized agent that handles marketing campaigns and promotional activities
-- **Settings_Agent**: Specialized agent that manages system configuration and user preferences
+- **Contacts_Agent**: Specialized agent that handles client contact management and customer relationship operations for painting business
+- **Projects_Agent**: Specialized agent that manages painting projects including specifications, timelines, costs, and completion tracking
+- **Appointments_Agent**: Specialized agent that manages scheduling and calendar operations for painting consultations and project work
+- **Proposals_Agent**: Specialized agent that handles painting project proposal creation, tracking, and management
+- **Invoices_Agent**: Specialized agent that manages invoice generation, payment tracking, and billing operations for painting projects
+- **Reviews_Agent**: Specialized agent that manages customer reviews and feedback for completed painting projects
+- **Marketing_Agent**: Specialized agent that handles marketing campaigns and promotional activities for painting services
+- **Tasks_Agent**: Specialized agent that manages project-related tasks and to-do items for painting work
+- **Settings_Agent**: Specialized agent that manages system configuration, business goals, and user preferences
 - **Voice_Session**: An active conversation where the user can speak and receive voice responses
 - **WebSocket_Connection**: A persistent, full-duplex communication protocol that enables real-time, bidirectional data exchange between client and server over a single TCP connection, allowing for low-latency streaming of audio data and instant message delivery
 - **Audio_Processing**: Converting speech to text and text back to speech
@@ -27,7 +30,7 @@ The Voice-Based Business Agent is a real-time voice assistant that enables users
 
 ### Requirement 1
 
-**User Story:** As a user, I want to start voice conversations with the business assistant, so that I can interact with business operations through speech.
+**User Story:** As a painting contractor, I want to start voice conversations with the business assistant, so that I can manage my painting business operations through speech.
 
 #### Acceptance Criteria
 
@@ -39,22 +42,25 @@ The Voice-Based Business Agent is a real-time voice assistant that enables users
 
 ### Requirement 2
 
-**User Story:** As a user, I want my queries routed to the right business specialist, so that I get accurate responses for different types of business operations.
+**User Story:** As a painting contractor, I want my queries routed to the right business specialist, so that I get accurate responses for different types of painting business operations.
 
 #### Acceptance Criteria
 
-1. WHEN a user asks about contacts or customers, THE Supervisor_Agent SHALL route the query to the Contacts_Agent
-2. WHEN a user asks about scheduling or appointments, THE Supervisor_Agent SHALL route the query to the Appointments_Agent
-3. WHEN a user asks about proposals or deals, THE Supervisor_Agent SHALL route the query to the Proposals_Agent
-4. WHEN a user asks about reviews or feedback, THE Supervisor_Agent SHALL route the query to the Reviews_Agent
-5. WHEN a user asks about marketing or campaigns, THE Supervisor_Agent SHALL route the query to the Marketing_Agent
-6. WHEN a user asks about settings or configuration, THE Supervisor_Agent SHALL route the query to the Settings_Agent
-7. WHEN routing occurs, THE Supervisor_Agent SHALL pass the original query unchanged to the selected agent
-8. WHEN an agent responds, THE Supervisor_Agent SHALL return the response without modification
+1. WHEN a user asks about client contacts or customers, THE Supervisor_Agent SHALL route the query to the Contacts_Agent
+2. WHEN a user asks about painting projects or job details, THE Supervisor_Agent SHALL route the query to the Projects_Agent
+3. WHEN a user asks about scheduling or appointments, THE Supervisor_Agent SHALL route the query to the Appointments_Agent
+4. WHEN a user asks about proposals or estimates, THE Supervisor_Agent SHALL route the query to the Proposals_Agent
+5. WHEN a user asks about invoices or billing, THE Supervisor_Agent SHALL route the query to the Invoices_Agent
+6. WHEN a user asks about reviews or customer feedback, THE Supervisor_Agent SHALL route the query to the Reviews_Agent
+7. WHEN a user asks about marketing or promotional campaigns, THE Supervisor_Agent SHALL route the query to the Marketing_Agent
+8. WHEN a user asks about tasks or to-do items, THE Supervisor_Agent SHALL route the query to the Tasks_Agent
+9. WHEN a user asks about settings, goals, or configuration, THE Supervisor_Agent SHALL route the query to the Settings_Agent
+10. WHEN routing occurs, THE Supervisor_Agent SHALL pass the original query unchanged to the selected agent
+11. WHEN an agent responds, THE Supervisor_Agent SHALL return the response without modification
 
 ### Requirement 3
 
-**User Story:** As a user, I want to hear spoken responses from the system, so that I can have natural voice conversations.
+**User Story:** As a painting contractor, I want to hear spoken responses from the system, so that I can have natural voice conversations while working on job sites.
 
 #### Acceptance Criteria
 
@@ -66,7 +72,7 @@ The Voice-Based Business Agent is a real-time voice assistant that enables users
 
 ### Requirement 4
 
-**User Story:** As a user, I want to manage contacts and customer relationships with voice commands, so that I can handle customer interactions hands-free.
+**User Story:** As a painting contractor, I want to manage client contacts and customer relationships with voice commands, so that I can handle customer interactions hands-free while on job sites.
 
 #### Acceptance Criteria
 
@@ -78,55 +84,91 @@ The Voice-Based Business Agent is a real-time voice assistant that enables users
 
 ### Requirement 5
 
-**User Story:** As a user, I want to schedule and manage appointments by voice, so that I can coordinate meetings without manual calendar management.
+**User Story:** As a painting contractor, I want to manage painting projects through voice commands, so that I can track job specifications, timelines, costs, and completion status hands-free.
 
 #### Acceptance Criteria
 
-1. WHEN a user asks about appointments, THE Appointments_Agent SHALL retrieve appointment details including date, time, location, client information, and status
-2. WHEN a user requests to schedule appointments, THE Appointments_Agent SHALL create appointments with title, client, date, start/end times, location, and type
-3. WHEN scheduling conflicts occur, THE Appointments_Agent SHALL check existing appointments and suggest alternative times
-4. WHEN appointment status changes are requested, THE Appointments_Agent SHALL update status to scheduled, confirmed, completed, cancelled, or rescheduled
-5. WHEN appointments are linked to projects, THE Appointments_Agent SHALL maintain the project relationship and report project context
+1. WHEN a user asks about painting projects, THE Projects_Agent SHALL retrieve project details including name, client, status, location, paint specifications, dates, costs, and completion percentage
+2. WHEN a user requests to create projects, THE Projects_Agent SHALL create projects with client information, paint specifications (type, brand, color, coats, primer), square footage, and budget
+3. WHEN project status updates are requested, THE Projects_Agent SHALL update status to pending, in-progress, completed, cancelled, or on-hold
+4. WHEN project cost tracking is needed, THE Projects_Agent SHALL track estimated cost, actual cost, and budget with variance calculations
+5. WHEN projects are linked to clients, THE Projects_Agent SHALL maintain client relationships and report associated invoices, appointments, and tasks
 
 ### Requirement 6
 
-**User Story:** As a user, I want to create and track proposals through voice commands, so that I can manage business deals efficiently.
+**User Story:** As a painting contractor, I want to schedule and manage appointments by voice, so that I can coordinate client consultations and painting work without manual calendar management.
 
 #### Acceptance Criteria
 
-1. WHEN a user asks about proposals, THE Proposals_Agent SHALL retrieve proposal details including title, client, description, scope of work, amounts, and status
-2. WHEN a user requests to create proposals, THE Proposals_Agent SHALL generate proposals with client information, sections, pricing, and terms
+1. WHEN a user asks about appointments, THE Appointments_Agent SHALL retrieve appointment details including date, time, location, client information, appointment type, and status
+2. WHEN a user requests to schedule appointments, THE Appointments_Agent SHALL create appointments with title, client, date, start/end times, location, and type (consultation, estimate, painting work)
+3. WHEN scheduling conflicts occur, THE Appointments_Agent SHALL check existing appointments and suggest alternative times
+4. WHEN appointment status changes are requested, THE Appointments_Agent SHALL update status to scheduled, confirmed, in-progress, completed, cancelled, no-show, or rescheduled
+5. WHEN appointments are linked to painting projects, THE Appointments_Agent SHALL maintain the project relationship and report project context
+
+### Requirement 7
+
+**User Story:** As a painting contractor, I want to create and track project proposals through voice commands, so that I can manage painting estimates and bids efficiently.
+
+#### Acceptance Criteria
+
+1. WHEN a user asks about proposals, THE Proposals_Agent SHALL retrieve proposal details including title, client, description, scope of work, pricing sections, amounts, and status
+2. WHEN a user requests to create proposals, THE Proposals_Agent SHALL generate painting proposals with client information, scope of work, pricing sections, terms and conditions
 3. WHEN proposal status updates are requested, THE Proposals_Agent SHALL update status to draft, sent, viewed, accepted, rejected, or expired
 4. WHEN proposal calculations are needed, THE Proposals_Agent SHALL compute subtotal, tax amounts, discounts, and total amounts
 5. WHEN proposals are linked to clients, THE Proposals_Agent SHALL maintain client relationships and auto-populate client details
 
-### Requirement 7
+### Requirement 8
 
-**User Story:** As a user, I want to manage customer reviews and feedback by voice, so that I can respond to customer input promptly.
+**User Story:** As a painting contractor, I want to manage invoices and billing through voice commands, so that I can handle payment tracking for completed painting projects.
+
+#### Acceptance Criteria
+
+1. WHEN a user asks about invoices, THE Invoices_Agent SHALL retrieve invoice details including invoice number, client, project, amounts, payment status, and due dates
+2. WHEN a user requests to create invoices, THE Invoices_Agent SHALL generate invoices with client information, project reference, line items, and payment terms
+3. WHEN invoice calculations are needed, THE Invoices_Agent SHALL compute subtotal, tax amounts, discounts, total amount, amount paid, and balance due
+4. WHEN payment tracking is requested, THE Invoices_Agent SHALL update amount paid, paid date, and automatically calculate balance due
+5. WHEN invoice status updates are needed, THE Invoices_Agent SHALL update status to draft, sent, viewed, partial, paid, overdue, or cancelled
+
+### Requirement 9
+
+**User Story:** As a painting contractor, I want to manage customer reviews and feedback by voice, so that I can respond to customer input about completed painting projects promptly.
 
 #### Acceptance Criteria
 
 1. WHEN a user asks about reviews, THE Reviews_Agent SHALL retrieve review details including rating (1-5), title, review text, platform, and status
 2. WHEN a user requests to respond to reviews, THE Reviews_Agent SHALL create response text and update the response_date and responded_by fields
-3. WHEN review analytics are requested, THE Reviews_Agent SHALL calculate average ratings, sentiment analysis, and review trends
-4. WHEN reviews are linked to projects, THE Reviews_Agent SHALL report project context and client information
+3. WHEN review analytics are requested, THE Reviews_Agent SHALL calculate average ratings, sentiment analysis, and review trends for painting projects
+4. WHEN reviews are linked to painting projects, THE Reviews_Agent SHALL report project context and client information
 5. WHEN review status updates are needed, THE Reviews_Agent SHALL update status to pending, approved, published, responded, or flagged
 
-### Requirement 8
+### Requirement 10
 
-**User Story:** As a user, I want to coordinate marketing activities through voice commands, so that I can manage campaigns and promotional efforts efficiently.
+**User Story:** As a painting contractor, I want to coordinate marketing activities through voice commands, so that I can manage promotional campaigns for my painting services efficiently.
 
 #### Acceptance Criteria
 
 1. WHEN a user asks about campaigns, THE Marketing_Agent SHALL retrieve campaign details including name, type, status, dates, budget, and performance metrics
 2. WHEN a user requests campaign performance, THE Marketing_Agent SHALL report sent count, delivered count, open rate, click rate, conversion rate, and ROI
-3. WHEN campaign creation is requested, THE Marketing_Agent SHALL create campaigns with target audience, budget, content, and scheduling information
+3. WHEN campaign creation is requested, THE Marketing_Agent SHALL create painting service campaigns with target audience, budget, content, and scheduling information
 4. WHEN campaign status updates are needed, THE Marketing_Agent SHALL update status to draft, scheduled, active, paused, completed, or cancelled
 5. WHEN campaign analytics are requested, THE Marketing_Agent SHALL calculate revenue generated, cost effectiveness, and provide optimization recommendations
 
-### Requirement 9
+### Requirement 11
 
-**User Story:** As a user, I want to configure system settings through voice commands, so that I can customize the assistant for my business needs.
+**User Story:** As a painting contractor, I want to manage project tasks through voice commands, so that I can track to-do items and work assignments for painting jobs.
+
+#### Acceptance Criteria
+
+1. WHEN a user asks about tasks, THE Tasks_Agent SHALL retrieve task details including title, description, project, client, status, priority, assigned person, and due date
+2. WHEN a user requests to create tasks, THE Tasks_Agent SHALL create tasks with project or client linkage, priority level, assignment, and due dates
+3. WHEN task status updates are requested, THE Tasks_Agent SHALL update status to todo, in-progress, completed, or cancelled
+4. WHEN tasks are linked to painting projects, THE Tasks_Agent SHALL maintain project relationships and report project context
+5. WHEN task checklists are needed, THE Tasks_Agent SHALL manage checklist items within tasks for detailed work tracking
+
+### Requirement 12
+
+**User Story:** As a painting contractor, I want to configure system settings through voice commands, so that I can customize the assistant for my painting business needs.
 
 #### Acceptance Criteria
 
@@ -136,9 +178,9 @@ The Voice-Based Business Agent is a real-time voice assistant that enables users
 4. WHEN settings affect other agents, THE Settings_Agent SHALL coordinate updates across the system
 5. WHEN settings backup is requested, THE Settings_Agent SHALL export and store configuration data
 
-### Requirement 10
+### Requirement 13
 
-**User Story:** As a user, I want to send text messages directly to the supervisor agent from the frontend, so that I can interact with the system through both voice and text input methods.
+**User Story:** As a painting contractor, I want to send text messages directly to the supervisor agent from the frontend, so that I can interact with the system through both voice and text input methods.
 
 #### Acceptance Criteria
 
@@ -148,9 +190,9 @@ The Voice-Based Business Agent is a real-time voice assistant that enables users
 4. WHEN both voice and text modes are available, THE Voice_Assistant SHALL allow users to switch between input methods seamlessly
 5. WHEN text input is used, THE Voice_Assistant SHALL maintain the same routing and response logic as voice input
 
-### Requirement 11
+### Requirement 14
 
-**User Story:** As a user, I want voice and text conversations to share the same context, so that I can seamlessly continue conversations regardless of input method.
+**User Story:** As a painting contractor, I want voice and text conversations to share the same context, so that I can seamlessly continue conversations regardless of input method.
 
 #### Acceptance Criteria
 
@@ -158,21 +200,23 @@ The Voice-Based Business Agent is a real-time voice assistant that enables users
 2. WHEN a user switches from text to voice input, THE Voice_Assistant SHALL retrieve conversation history from the messages JSONB field
 3. WHEN conversation context is maintained, THE Voice_Assistant SHALL reference previous messages stored in the database regardless of input method
 4. WHEN agents process queries, THE Voice_Assistant SHALL provide conversation history from the database to maintain context across sessions
-5. WHEN conversations are linked to clients, THE Voice_Assistant SHALL associate conversation records with the appropriate client_id for relationship tracking### 
-Requirement 12
+5. WHEN conversations are linked to clients, THE Voice_Assistant SHALL associate conversation records with the appropriate client_id for relationship tracking
 
-**User Story:** As a user, I want to configure system settings and manage business data through voice commands, so that I can customize the assistant and maintain business information.
+### Requirement 15
+
+**User Story:** As a painting contractor, I want to track business goals through voice commands, so that I can monitor my painting business performance and progress.
 
 #### Acceptance Criteria
 
-1. WHEN a user asks about system settings, THE Settings_Agent SHALL retrieve configuration data from the settings table using key-value pairs
-2. WHEN a user requests to update settings, THE Settings_Agent SHALL modify the settings table and confirm configuration changes
-3. WHEN a user asks about business goals, THE Settings_Agent SHALL retrieve and report goals including target values, current progress, and completion percentages
-4. WHEN goal tracking is requested, THE Settings_Agent SHALL update current_value and automatically calculate progress_percentage
-5. WHEN data relationships need maintenance, THE Settings_Agent SHALL ensure referential integrity across contacts, projects, appointments, proposals, and reviews###
- Requirement 13
+1. WHEN a user asks about business goals, THE Settings_Agent SHALL retrieve and report goals including target values, current progress, and completion percentages
+2. WHEN goal tracking is requested, THE Settings_Agent SHALL update current_value and automatically calculate progress_percentage
+3. WHEN goal status updates are needed, THE Settings_Agent SHALL update status to active, completed, cancelled, or overdue
+4. WHEN goal analytics are requested, THE Settings_Agent SHALL calculate progress trends and provide recommendations for achieving targets
+5. WHEN goals are tracked over time, THE Settings_Agent SHALL maintain historical progress data for performance analysis
 
-**User Story:** As a system administrator, I want to ensure secure user authentication and data isolation, so that users can only access their own business data and operations.
+### Requirement 16
+
+**User Story:** As a system administrator, I want to ensure secure user authentication and data isolation, so that painting contractors can only access their own business data and operations.
 
 #### Acceptance Criteria
 
@@ -182,26 +226,29 @@ Requirement 12
 4. WHEN users request data from any table, THE Voice_Assistant SHALL apply Row Level Security (RLS) policies to restrict access to user-owned records
 5. WHEN session tokens expire or become invalid, THE Voice_Assistant SHALL reject requests and require re-authentication
 
-### Requirement 14
+### Requirement 17
 
-**User Story:** As a business user, I want my data to be protected from unauthorized access, so that my contacts, appointments, proposals, and other business information remain private and secure.
+**User Story:** As a painting contractor, I want my data to be protected from unauthorized access, so that my client contacts, painting projects, appointments, proposals, invoices, and other business information remain private and secure.
 
 #### Acceptance Criteria
 
 1. WHEN the Contacts_Agent retrieves contact data, THE Voice_Assistant SHALL ensure only contacts belonging to the authenticated user are returned
-2. WHEN the Appointments_Agent accesses appointment data, THE Voice_Assistant SHALL filter appointments by user ownership and client relationships
-3. WHEN the Proposals_Agent processes proposal requests, THE Voice_Assistant SHALL verify the user owns the client relationship before accessing proposal data
-4. WHEN the Reviews_Agent handles review data, THE Voice_Assistant SHALL ensure reviews are only accessible if linked to user-owned projects or clients
-5. WHEN the Marketing_Agent accesses campaign data, THE Voice_Assistant SHALL restrict access to campaigns created by or assigned to the authenticated user
+2. WHEN the Projects_Agent accesses project data, THE Voice_Assistant SHALL filter painting projects by user ownership and client relationships
+3. WHEN the Appointments_Agent accesses appointment data, THE Voice_Assistant SHALL filter appointments by user ownership and client relationships
+4. WHEN the Proposals_Agent processes proposal requests, THE Voice_Assistant SHALL verify the user owns the client relationship before accessing proposal data
+5. WHEN the Invoices_Agent handles invoice data, THE Voice_Assistant SHALL ensure invoices are only accessible if linked to user-owned projects or clients
+6. WHEN the Reviews_Agent handles review data, THE Voice_Assistant SHALL ensure reviews are only accessible if linked to user-owned projects or clients
+7. WHEN the Marketing_Agent accesses campaign data, THE Voice_Assistant SHALL restrict access to campaigns created by or assigned to the authenticated user
+8. WHEN the Tasks_Agent accesses task data, THE Voice_Assistant SHALL filter tasks by user ownership and project/client relationships
 
-### Requirement 15
+### Requirement 18
 
-**User Story:** As a security-conscious user, I want all data modifications to be logged and validated, so that I can track changes and ensure data integrity.
+**User Story:** As a security-conscious painting contractor, I want all data modifications to be logged and validated, so that I can track changes to my business data and ensure data integrity.
 
 #### Acceptance Criteria
 
 1. WHEN any agent modifies database records, THE Voice_Assistant SHALL log the user ID, timestamp, operation type, and affected records
 2. WHEN data validation fails, THE Voice_Assistant SHALL reject the operation and log the security violation attempt
-3. WHEN cross-table relationships are accessed, THE Voice_Assistant SHALL validate that all related records belong to the same user
-4. WHEN conversation history is stored, THE Voice_Assistant SHALL associate messages with the authenticated user and encrypt sensitive content
-5. WHEN system settings are modified, THE Voice_Assistant SHALL ensure only authorized users can change configuration data
+3. WHEN cross-table relationships are accessed, THE Voice_Assistant SHALL validate that all related records (projects, invoices, appointments, tasks) belong to the same user
+4. WHEN conversation history is stored, THE Voice_Assistant SHALL associate messages with the authenticated user and encrypt sensitive painting business content
+5. WHEN business goals or settings are modified, THE Voice_Assistant SHALL ensure only authorized users can change their own configuration data
