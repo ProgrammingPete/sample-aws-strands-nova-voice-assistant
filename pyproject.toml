@@ -8,6 +8,7 @@ dependencies = [
     "asyncio>=3.4.3",
     "aws-sdk-bedrock-runtime>=0.1.1",
     "boto3>=1.28.0",
+    "hypothesis>=6.0.0",
     "numpy>=1.24.0",
     "psycopg2-binary>=2.9.11",
     "pyaudio>=0.2.13",
