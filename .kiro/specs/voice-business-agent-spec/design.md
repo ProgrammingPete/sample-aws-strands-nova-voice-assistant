@@ -26,25 +26,25 @@ graph TB
     subgraph "Backend (Python)"
         WS_SERVER[WebSocket Server]
         ORCHESTRATOR[Agent Orchestrator]
-        SUPERVISOR[Supervisor Agent]
+        SUPERVISOR[Supervisor Agent<br/>Nova Lite v1]
         
         subgraph "Painting Business Agents"
-            CONTACTS[Contacts Agent]
-            PROJECTS[Projects Agent]
-            APPOINTMENTS[Appointments Agent]
-            PROPOSALS[Proposals Agent]
-            INVOICES[Invoices Agent]
-            REVIEWS[Reviews Agent]
-            MARKETING[Marketing Agent]
-            TASKS[Tasks Agent]
-            SETTINGS[Settings Agent]
+            CONTACTS[Contacts Agent<br/>Nova Lite v1]
+            PROJECTS[Projects Agent<br/>Nova Lite v1]
+            APPOINTMENTS[Appointments Agent<br/>Nova Lite v1]
+            PROPOSALS[Proposals Agent<br/>Nova Lite v1]
+            INVOICES[Invoices Agent<br/>Nova Lite v1]
+            REVIEWS[Reviews Agent<br/>Nova Lite v1]
+            MARKETING[Marketing Agent<br/>Nova Lite v1]
+            TASKS[Tasks Agent<br/>Nova Lite v1]
+            SETTINGS[Settings Agent<br/>Nova Lite v1]
         end
     end
     
-    subgraph "External Services"
-        NOVA[Nova Sonic]
-        BEDROCK[Bedrock Nova Lite]
-        SUPABASE[Supabase DB + Auth]
+    subgraph "AWS Services"
+        NOVA_SONIC[Amazon Nova Sonic v1<br/>Speech-to-Speech]
+        BEDROCK[AWS Bedrock<br/>Nova Lite v1:0]
+        SUPABASE[Supabase<br/>PostgreSQL + Auth]
     end
     
     UI --> WS_CLIENT
@@ -61,7 +61,7 @@ graph TB
     SUPERVISOR --> TASKS
     SUPERVISOR --> SETTINGS
     
-    WS_SERVER <--> NOVA
+    WS_SERVER <--> NOVA_SONIC
     SUPERVISOR --> BEDROCK
     CONTACTS --> BEDROCK
     PROJECTS --> BEDROCK

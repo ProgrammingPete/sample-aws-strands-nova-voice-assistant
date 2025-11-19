@@ -4,6 +4,17 @@
 
 The Voice-Based Painting Business Agent is a real-time voice assistant that enables painting contractors to manage their business operations through natural speech. The system uses Amazon Nova Sonic for voice processing, AWS Bedrock for AI reasoning, and a multi-agent architecture to handle different types of painting business queries. Users can speak to the system to manage client contacts, schedule painting appointments, handle project proposals, manage customer reviews, coordinate marketing campaigns, track painting projects and invoices, and configure system settings.
 
+## Related Specifications
+
+This specification focuses on the core voice assistant infrastructure, agent orchestration, and routing. Additional functionality is detailed in separate specifications:
+
+- **user-authentication**: User authentication, session management, data isolation, and audit logging
+- **database-schema**: Complete database structure for all painting business tables, relationships, and constraints
+- **conversation-context**: Conversation history management, context switching between voice and text, and cross-session context
+- **invoice-agent**: Invoice generation, payment tracking, billing operations, and line item management
+
+For agent-specific requirements beyond the Invoice Agent, refer to the individual agent requirements in this document (Requirements 4-7, 9-12, 15).
+
 ## Glossary
 
 - **Voice_Assistant**: The complete voice-based painting business assistant application
@@ -74,6 +85,8 @@ The Voice-Based Painting Business Agent is a real-time voice assistant that enab
 
 **User Story:** As a painting contractor, I want to manage client contacts and customer relationships with voice commands, so that I can handle customer interactions hands-free while on job sites.
 
+**Note:** Database structure for contacts and all other painting business tables is specified in the **database-schema** specification.
+
 #### Acceptance Criteria
 
 1. WHEN a user asks about contact information, THE Contacts_Agent SHALL retrieve and report contact details including name, email, phone, company, address, and notes
@@ -122,13 +135,13 @@ The Voice-Based Painting Business Agent is a real-time voice assistant that enab
 
 **User Story:** As a painting contractor, I want to manage invoices and billing through voice commands, so that I can handle payment tracking for completed painting projects.
 
+**Note:** Detailed invoice management requirements are specified in the **invoice-agent** specification.
+
 #### Acceptance Criteria
 
-1. WHEN a user asks about invoices, THE Invoices_Agent SHALL retrieve invoice details including invoice number, client, project, amounts, payment status, and due dates
-2. WHEN a user requests to create invoices, THE Invoices_Agent SHALL generate invoices with client information, project reference, line items, and payment terms
-3. WHEN invoice calculations are needed, THE Invoices_Agent SHALL compute subtotal, tax amounts, discounts, total amount, amount paid, and balance due
-4. WHEN payment tracking is requested, THE Invoices_Agent SHALL update amount paid, paid date, and automatically calculate balance due
-5. WHEN invoice status updates are needed, THE Invoices_Agent SHALL update status to draft, sent, viewed, partial, paid, overdue, or cancelled
+1. WHEN a user asks about invoices or billing, THE Supervisor_Agent SHALL route the query to the Invoices_Agent
+2. WHEN the Invoices_Agent processes queries, THE Voice_Assistant SHALL provide responses about invoice operations
+3. WHEN invoice operations are performed, THE Voice_Assistant SHALL maintain conversation context as specified in the **conversation-context** specification
 
 ### Requirement 9
 
@@ -194,13 +207,13 @@ The Voice-Based Painting Business Agent is a real-time voice assistant that enab
 
 **User Story:** As a painting contractor, I want voice and text conversations to share the same context, so that I can seamlessly continue conversations regardless of input method.
 
+**Note:** Detailed conversation context management requirements are specified in the **conversation-context** specification.
+
 #### Acceptance Criteria
 
-1. WHEN a user switches from voice to text input, THE Voice_Assistant SHALL store messages in the conversations table and maintain context
-2. WHEN a user switches from text to voice input, THE Voice_Assistant SHALL retrieve conversation history from the messages JSONB field
-3. WHEN conversation context is maintained, THE Voice_Assistant SHALL reference previous messages stored in the database regardless of input method
-4. WHEN agents process queries, THE Voice_Assistant SHALL provide conversation history from the database to maintain context across sessions
-5. WHEN conversations are linked to clients, THE Voice_Assistant SHALL associate conversation records with the appropriate client_id for relationship tracking
+1. WHEN users interact via voice or text, THE Voice_Assistant SHALL maintain conversation context as specified in the **conversation-context** specification
+2. WHEN agents process queries, THE Voice_Assistant SHALL provide conversation history to maintain context across sessions
+3. WHEN conversations involve painting business operations, THE Voice_Assistant SHALL link conversations to relevant entities (clients, projects) as specified in the **database-schema** specification
 
 ### Requirement 15
 
